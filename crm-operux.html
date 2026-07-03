@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Operux</title>
+<style>
+  :root{
+    --black:#0A0A0A;
+    --red:#C2102A;
+    --red-hover:#A50E23;
+    --off-white:#FAFAFA;
+    --gray:#BFBFBF;
+    --success:#2E7D32;
+    --success-text:#4CAF50;
+    --warning:#F2A900;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--black);
+    color:var(--off-white);
+    padding-bottom:80px;
+  }
+  header{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:var(--black);
+    border-bottom:1px solid rgba(191,191,191,0.15);
+    padding:12px 16px;
+  }
+  .header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand h1{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    margin:0;
+  }
+  .brand p{
+    font-size:11px;
+    color:var(--gray);
+    margin:2px 0 0;
+  }
+  #btn-add{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--red);
+    color:var(--off-white);
+    border:none;
+    font-size:14px;
+    font-weight:500;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  #btn-add:active{transform:scale(0.96);}
+  .stats{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .stat{
+    flex:1;
+    border-radius:8px;
+    padding:8px 12px;
+    border:1px solid rgba(191,191,191,0.2);
+    background:rgba(255,255,255,0.03);
+  }
+  .stat.success{border-color:rgba(46,125,50,0.4);background:rgba(46,125,50,0.1);}
+  .stat.warning{border-color:rgba(242,169,0,0.4);background:rgba(242,169,0,0.1);}
+  .stat .num{font-size:18px;font-weight:700;}
+  .stat.success .num{color:var(--success-text);}
+  .stat.warning .num{color:var(--warning);}
+  .stat .lbl{font-size:11px;color:var(--gray);}
+  .stat.success .lbl{color:var(--success-text);}
+  .stat.warning .lbl{color:var(--warning);}
+
+  #list{padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .empty{text-align:center;color:var(--gray);padding:64px 0;font-size:14px;}
+
+  .card{
+    border-radius:12px;
+    border:1px solid rgba(191,191,191,0.2);
+    background:rgba(255,255,255,0.03);
+    overflow:hidden;
+  }
+  .card-head{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 16px;
+    background:none;
+    border:none;
+    color:inherit;
+    text-align:left;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .card-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+  .card-body{
+    padding:0 16px 16px;
+    display:none;
+    flex-direction:column;
+    gap:12px;
+    border-top:1px solid rgba(191,191,191,0.15);
+    padding-top:12px;
+  }
+  .card-body.open{display:flex;}
+  label{font-size:11px;font-weight:500;color:var(--gray);display:block;margin-bottom:4px;}
+  input[type=text], input[type=tel], input[type=datetime-local], textarea{
+    width:100%;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:14px;
+    border:1px solid rgba(191,191,191,0.25);
+    background:rgba(255,255,255,0.05);
+    color:var(--off-white);
+    font-family:inherit;
+    color-scheme:dark;
+  }
+  textarea{resize:none;}
+  .msg-block{border-radius:8px;padding:10px;border:1px solid rgba(191,191,191,0.15);background:rgba(255,255,255,0.04);}
+  .msg-block .title{font-size:11px;font-weight:600;letter-spacing:0.03em;color:var(--gray);margin-bottom:8px;}
+  .msg-block label{margin-top:8px;}
+  .duration-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:500;
+    padding:8px 12px;
+    border-radius:8px;
+    background:var(--red);
+    color:var(--off-white);
+  }
+  .duration-box.warn{
+    background:rgba(242,169,0,0.15);
+    color:var(--warning);
+    border:1px solid var(--warning);
+  }
+  .status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .status-btn{
+    font-size:12px;
+    font-weight:500;
+    padding:8px 4px;
+    border-radius:8px;
+    border:1px solid rgba(191,191,191,0.25);
+    background:rgba(255,255,255,0.05);
+    color:var(--gray);
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .status-btn.active-enviada{background:var(--success);color:var(--black);border-color:transparent;}
+  .status-btn.active-no_enviada{background:var(--warning);color:var(--black);border-color:transparent;}
+  .status-btn.active-no_aplica{background:var(--gray);color:var(--black);border-color:transparent;}
+  .btn-delete{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:12px;font-weight:500;padding:8px;border-radius:8px;
+    color:var(--red);border:1px solid rgba(194,16,42,0.4);background:rgba(194,16,42,0.08);
+    cursor:pointer;font-family:inherit;
+  }
+  .footer-actions{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;gap:8px;
+    padding:12px 16px;
+    background:var(--black);
+    border-top:1px solid rgba(191,191,191,0.15);
+  }
+  .footer-actions button{
+    flex:1;font-size:12px;font-weight:500;padding:10px;border-radius:8px;
+    border:1px solid rgba(191,191,191,0.25);background:rgba(255,255,255,0.05);
+    color:var(--off-white);cursor:pointer;font-family:inherit;
+  }
+  #file-input{display:none;}
+  svg{display:block;}
+
+  /* ---- AUTH ---- */
+  #auth-screen{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .auth-logo{margin-bottom:20px;}
+  .auth-card{
+    width:100%;
+    max-width:340px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .auth-title{
+    text-align:center;
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    margin-bottom:4px;
+  }
+  .auth-subtitle{
+    text-align:center;
+    font-size:12px;
+    color:var(--gray);
+    margin-bottom:12px;
+  }
+  .auth-error{
+    font-size:12px;
+    color:var(--red);
+    background:rgba(194,16,42,0.1);
+    border:1px solid rgba(194,16,42,0.4);
+    padding:8px 10px;
+    border-radius:8px;
+    display:none;
+  }
+  .auth-error.show{display:block;}
+  #btn-auth-submit{
+    background:var(--red);
+    color:var(--off-white);
+    border:none;
+    font-size:14px;
+    font-weight:600;
+    padding:11px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  #btn-auth-submit:active{transform:scale(0.98);}
+  .auth-switch{
+    text-align:center;
+    font-size:12px;
+    color:var(--gray);
+    margin-top:8px;
+  }
+  .auth-switch a{color:var(--red);text-decoration:none;font-weight:600;cursor:pointer;}
+  #app-screen{display:none;}
+  #user-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:6px 16px;
+    font-size:11px;
+    color:var(--gray);
+    background:rgba(255,255,255,0.02);
+    border-bottom:1px solid rgba(191,191,191,0.1);
+  }
+  #btn-logout{
+    background:none;
+    border:none;
+    color:var(--red);
+    font-size:11px;
+    font-weight:600;
+    cursor:pointer;
+    padding:4px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PANTALLA DE AUTENTICACIÓN ============ -->
+<div id="auth-screen">
+  <div class="auth-logo">
+    <svg width="56" height="56" viewBox="0 0 100 100" fill="none">
+      <path d="M50 12 A38 38 0 1 1 33 84.4 A38 38 0 0 1 50 12" stroke="#FAFAFA" stroke-width="11" fill="none"/>
+      <rect x="38" y="46" width="30" height="8" fill="#FAFAFA"/>
+      <circle cx="38" cy="50" r="11" fill="#FAFAFA"/>
+      <circle cx="76" cy="50" r="15" fill="#C2102A"/>
+    </svg>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="auth-card" id="login-card">
+    <div class="auth-title">CRM OPERUX</div>
+    <div class="auth-subtitle">Inicia sesión para continuar</div>
+    <div class="auth-error" id="login-error"></div>
+    <div>
+      <label>Correo</label>
+      <input type="text" id="login-email" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div>
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button id="btn-auth-submit" onclick="handleLogin()">Iniciar sesión</button>
+    <div class="auth-switch">¿No tienes cuenta? <a onclick="showRegister()">Regístrate</a></div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div class="auth-card" id="register-card" style="display:none;">
+    <div class="auth-title">Crear cuenta</div>
+    <div class="auth-subtitle">Los datos se guardan solo en este navegador</div>
+    <div class="auth-error" id="register-error"></div>
+    <div>
+      <label>Nombre</label>
+      <input type="text" id="register-name" placeholder="Jesús">
+    </div>
+    <div>
+      <label>Correo</label>
+      <input type="text" id="register-email" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <div>
+      <label>Contraseña</label>
+      <input type="password" id="register-password" placeholder="Mínimo 6 caracteres">
+    </div>
+    <button id="btn-auth-submit" onclick="handleRegister()">Crear cuenta</button>
+    <div class="auth-switch">¿Ya tienes cuenta? <a onclick="showLogin()">Inicia sesión</a></div>
+  </div>
+</div>
+
+<!-- ============ APP (CRM) ============ -->
+<div id="app-screen">
+  <div id="user-bar">
+    <span id="user-greeting"></span>
+    <button id="btn-logout" onclick="handleLogout()">Cerrar sesión</button>
+  </div>
+
+  <header>
+    <div class="header-top">
+      <div class="brand">
+        <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+          <path d="M50 12 A38 38 0 1 1 33 84.4 A38 38 0 0 1 50 12" stroke="#FAFAFA" stroke-width="11" fill="none"/>
+          <rect x="38" y="46" width="30" height="8" fill="#FAFAFA"/>
+          <circle cx="38" cy="50" r="11" fill="#FAFAFA"/>
+          <circle cx="76" cy="50" r="15" fill="#C2102A"/>
+        </svg>
+        <div>
+          <h1>CRM OPERUX</h1>
+          <p>Mystery shopper · leads</p>
+        </div>
+      </div>
+      <button id="btn-add">+ Nuevo</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-total">0</div><div class="lbl">Total</div></div>
+      <div class="stat success"><div class="num" id="stat-enviada">0</div><div class="lbl">Enviadas</div></div>
+      <div class="stat warning"><div class="num" id="stat-pendiente">0</div><div class="lbl">Pendientes</div></div>
+    </div>
+  </header>
+
+  <div id="list"></div>
+
+  <div class="footer-actions">
+    <button id="btn-export">⬇ Exportar datos</button>
+    <button id="btn-import">⬆ Importar datos</button>
+    <input type="file" id="file-input" accept="application/json">
+  </div>
+</div>
+
+<script>
+/* ============ AUTENTICACIÓN (localStorage, 1 dispositivo) ============ */
+const USERS_KEY = 'operux-crm-users';
+const SESSION_KEY = 'operux-crm-session';
+
+function getUsers(){
+  try{ return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveUsers(users){
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+function simpleHash(str){
+  // Ofuscación básica, NO es cifrado seguro. Solo evita texto plano a simple vista.
+  let hash = 0;
+  for(let i=0;i<str.length;i++){
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'h' + hash.toString(36) + str.length;
+}
+
+function showLogin(){
+  document.getElementById('register-card').style.display = 'none';
+  document.getElementById('login-card').style.display = 'flex';
+  clearAuthErrors();
+}
+function showRegister(){
+  document.getElementById('login-card').style.display = 'none';
+  document.getElementById('register-card').style.display = 'flex';
+  clearAuthErrors();
+}
+function clearAuthErrors(){
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('register-error').classList.remove('show');
+}
+function showAuthError(id, msg){
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function handleRegister(){
+  const name = document.getElementById('register-name').value.trim();
+  const email = document.getElementById('register-email').value.trim().toLowerCase();
+  const password = document.getElementById('register-password').value;
+
+  if(!name || !email || !password){
+    showAuthError('register-error', 'Completa todos los campos.');
+    return;
+  }
+  if(!email.includes('@') || !email.includes('.')){
+    showAuthError('register-error', 'Correo inválido.');
+    return;
+  }
+  if(password.length < 6){
+    showAuthError('register-error', 'La contraseña debe tener al menos 6 caracteres.');
+    return;
+  }
+  const users = getUsers();
+  if(users[email]){
+    showAuthError('register-error', 'Ya existe una cuenta con ese correo.');
+    return;
+  }
+  users[email] = { name, passwordHash: simpleHash(password) };
+  saveUsers(users);
+  localStorage.setItem(SESSION_KEY, email);
+  startApp(email, name);
+}
+
+function handleLogin(){
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+
+  if(!email || !password){
+    showAuthError('login-error', 'Completa correo y contraseña.');
+    return;
+  }
+  const users = getUsers();
+  const user = users[email];
+  if(!user || user.passwordHash !== simpleHash(password)){
+    showAuthError('login-error', 'Correo o contraseña incorrectos.');
+    return;
+  }
+  localStorage.setItem(SESSION_KEY, email);
+  startApp(email, user.name);
+}
+
+function handleLogout(){
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  showLogin();
+}
+
+let currentUserEmail = null;
+
+function startApp(email, name){
+  currentUserEmail = email;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('user-greeting').textContent = `Sesión: ${name} (${email})`;
+  loadEntries();
+  render();
+}
+
+function entriesStorageKey(){
+  return `operux-crm-entries__${currentUserEmail}`;
+}
+
+function loadEntries(){
+  try{
+    const raw = localStorage.getItem(entriesStorageKey());
+    entries = raw ? JSON.parse(raw) : [];
+  } catch(e){
+    entries = [];
+  }
+}
+
+function persistEntries(){
+  try{
+    localStorage.setItem(entriesStorageKey(), JSON.stringify(entries));
+  } catch(e){
+    console.error('Error guardando:', e);
+  }
+}
+
+// Sesión activa al cargar la página
+window.addEventListener('DOMContentLoaded', () => {
+  const savedEmail = localStorage.getItem(SESSION_KEY);
+  if(savedEmail){
+    const users = getUsers();
+    const user = users[savedEmail];
+    if(user){
+      startApp(savedEmail, user.name);
+      return;
+    }
+  }
+  document.getElementById('auth-screen').style.display = 'flex';
+});
+
+const STATUS = {
+  enviada: { label: "Propuesta enviada", dot: "#2E7D32", textColor: "#4CAF50" },
+  no_enviada: { label: "No enviada", dot: "#F2A900", textColor: "#F2A900" },
+  no_aplica: { label: "No aplica", dot: "#BFBFBF", textColor: "#BFBFBF" },
+};
+const LONG_DURATION_MIN = 12 * 60;
+
+let entries = [];
+let expandedId = null;
+
+function uid(){
+  return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
+}
+
+function emptyEntry(){
+  return {
+    id: uid(), clinic: "", phone: "",
+    sentMsg: "", sentAt: "",
+    receivedMsg: "", receivedAt: "",
+    status: "no_aplica"
+  };
+}
+
+function calcDuration(sentAt, receivedAt){
+  if(!sentAt || !receivedAt) return null;
+  const s = new Date(sentAt);
+  const r = new Date(receivedAt);
+  let diffMs = r - s;
+  if(isNaN(diffMs)) return null;
+  if(diffMs < 0) diffMs += 24*60*60*1000;
+  const totalMin = Math.round(diffMs/60000);
+  const h = Math.floor(totalMin/60);
+  const m = totalMin % 60;
+  const label = h === 0 ? `${m} min` : `${h}h ${m}min`;
+  return { label, totalMin };
+}
+
+function updateEntry(id, field, value){
+  const e = entries.find(e => e.id === id);
+  if(e){ e[field] = value; persistEntries(); render(false); }
+}
+
+function deleteEntry(id){
+  entries = entries.filter(e => e.id !== id);
+  persistEntries();
+  render();
+}
+
+function addEntry(){
+  const e = emptyEntry();
+  entries.unshift(e);
+  expandedId = e.id;
+  persistEntries();
+  render();
+}
+
+function toggleExpand(id){
+  expandedId = (expandedId === id) ? null : id;
+  render(false);
+}
+
+function render(rebuildStats = true){
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  if(entries.length === 0){
+    list.innerHTML = '<div class="empty">Sin registros todavía.<br>Toca "+ Nuevo" para agregar una clínica.</div>';
+  }
+
+  entries.forEach(entry => {
+    const duration = calcDuration(entry.sentAt, entry.receivedAt);
+    const isLong = duration && duration.totalMin > LONG_DURATION_MIN;
+    const s = STATUS[entry.status];
+    const isOpen = expandedId === entry.id;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    card.innerHTML = `
+      <button class="card-head" onclick="toggleExpand('${entry.id}')">
+        <div style="flex:1;min-width:0;">
+          <div class="card-name">${entry.clinic || 'Clínica sin nombre'}</div>
+          <div class="card-meta">
+            <span class="badge" style="color:${s.textColor}"><span class="dot" style="background:${s.dot}"></span>${s.label}</span>
+            ${duration ? `<span class="badge" style="color:${isLong ? '#F2A900' : '#BFBFBF'}">⏱ ${duration.label}${isLong ? ' ⚠️' : ''}</span>` : ''}
+            ${entry.phone ? `<span class="badge" style="color:#BFBFBF">📞 ${entry.phone}</span>` : ''}
+          </div>
+        </div>
+      </button>
+      <div class="card-body ${isOpen ? 'open' : ''}">
+        <div>
+          <label>Nombre de la clínica</label>
+          <input type="text" value="${escapeHtml(entry.clinic)}" placeholder="Ej: Odonto Caracas"
+            oninput="updateEntry('${entry.id}','clinic',this.value)">
+        </div>
+        <div>
+          <label>Número de teléfono</label>
+          <input type="tel" value="${escapeHtml(entry.phone)}" placeholder="Ej: 0412 590 6591"
+            oninput="updateEntry('${entry.id}','phone',this.value)">
+        </div>
+        <div class="msg-block">
+          <div class="title">MENSAJE ENVIADO</div>
+          <textarea rows="2" placeholder="Ej: Hola, quería preguntar precios de ortodoncia..."
+            oninput="updateEntry('${entry.id}','sentMsg',this.value)">${escapeHtml(entry.sentMsg)}</textarea>
+          <label>Hora enviado</label>
+          <input type="datetime-local" value="${entry.sentAt}"
+            onchange="updateEntry('${entry.id}','sentAt',this.value)">
+        </div>
+        <div class="msg-block">
+          <div class="title">MENSAJE RECIBIDO</div>
+          <textarea rows="2" placeholder="Ej: Hola, para más info escríbenos al WhatsApp..."
+            oninput="updateEntry('${entry.id}','receivedMsg',this.value)">${escapeHtml(entry.receivedMsg)}</textarea>
+          <label>Hora recibido</label>
+          <input type="datetime-local" value="${entry.receivedAt}"
+            onchange="updateEntry('${entry.id}','receivedAt',this.value)">
+        </div>
+        ${duration ? `
+          <div class="duration-box ${isLong ? 'warn' : ''}">
+            ${isLong ? `⚠️ ${duration.label} — revisa AM/PM o la fecha, parece un error de captura` : `⏱ Tiempo de respuesta: ${duration.label}`}
+          </div>` : ''}
+        <div>
+          <label>¿Propuesta enviada?</label>
+          <div class="status-grid">
+            ${Object.entries(STATUS).map(([key,val]) => `
+              <button class="status-btn ${entry.status === key ? 'active-'+key : ''}"
+                onclick="updateEntry('${entry.id}','status','${key}')">${val.label}</button>
+            `).join('')}
+          </div>
+        </div>
+        <button class="btn-delete" onclick="deleteEntry('${entry.id}')">🗑 Eliminar registro</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  if(rebuildStats){
+    document.getElementById('stat-total').textContent = entries.length;
+    document.getElementById('stat-enviada').textContent = entries.filter(e => e.status === 'enviada').length;
+    document.getElementById('stat-pendiente').textContent = entries.filter(e => e.status === 'no_enviada').length;
+  } else {
+    document.getElementById('stat-total').textContent = entries.length;
+    document.getElementById('stat-enviada').textContent = entries.filter(e => e.status === 'enviada').length;
+    document.getElementById('stat-pendiente').textContent = entries.filter(e => e.status === 'no_enviada').length;
+  }
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('btn-add').addEventListener('click', addEntry);
+
+document.getElementById('btn-export').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `crm-operux-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('file-input').click();
+});
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try{
+      const data = JSON.parse(evt.target.result);
+      if(Array.isArray(data)){
+        entries = data;
+        persistEntries();
+        render();
+      } else {
+        alert('El archivo no tiene un formato válido.');
+      }
+    } catch(err){
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+</script>
+</body>
+</html>
